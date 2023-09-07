@@ -276,6 +276,8 @@ source = "git+https://github.com/huggingface/candle.git#000487c36fc6da3a8d645fff
 dependencies = [
  "byteorder",
  "candle-gemm",
+ "candle-kernels",
+ "cudarc",
  "half",
  "memmap2",
  "num-traits",
@@ -431,6 +433,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "candle-kernels"
+version = "0.2.1"
+source = "git+https://github.com/huggingface/candle.git#000487c36fc6da3a8d645fffbd8c24e23bcdeed1"
+dependencies = [
+ "glob",
+ "rayon",
+]
+
+[[package]]
 name = "candle-nn"
 version = "0.2.1"
 source = "git+https://github.com/huggingface/candle.git#000487c36fc6da3a8d645fffbd8c24e23bcdeed1"
@@ -582,6 +593,15 @@ name = "crunchy"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a81dae078cea95a014a339291cec439d2f232ebe854a9d672b796c6afafa9b7"
+
+[[package]]
+name = "cudarc"
+version = "0.9.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc4cab390f4a32340211f015292a4551742a63e528e9ade9e0bde0d1a989d2a1"
+dependencies = [
+ "half",
+]
 
 [[package]]
 name = "darling"
@@ -794,6 +814,12 @@ dependencies = [
  "libc",
  "wasi",
 ]
+
+[[package]]
+name = "glob"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d2fabcfbdc87f4758337ca535fb41a6d701b65693ce38287d856d1674551ec9b"
 
 [[package]]
 name = "half"

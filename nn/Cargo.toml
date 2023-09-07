@@ -13,3 +13,6 @@ argh.workspace = true
 thiserror.workspace = true
 anyhow.workspace = true
 rand.workspace = true
+
+[features]
+cuda = ["candle/cudnn", "candle-nn/cuda"]
