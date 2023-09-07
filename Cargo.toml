@@ -1,0 +1,14 @@
+[workspace]
+resolver = "2"
+members = [
+  "nn",
+]
+
+[workspace.dependencies]
+candle = { git = "https://github.com/huggingface/candle.git", package = "candle-core" }
+candle-nn = { git = "https://github.com/huggingface/candle.git" }
+candle-datasets = { git = "https://github.com/huggingface/candle.git" }
+argh = "0.1.12"
+thiserror = "1.0.40"
+anyhow = "1.0"
+rand = "0.8.5"
