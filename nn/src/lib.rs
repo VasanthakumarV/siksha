@@ -1,11 +1,13 @@
-use thiserror::Error;
-
-pub mod model;
+mod model;
 
 pub use model::ConvNet;
 
-#[derive(Error, Debug)]
-pub enum NnError {
-    #[error(transparent)]
-    CandleError(#[from] candle::error::Error),
+pub mod error {
+    use thiserror::Error;
+
+    #[derive(Error, Debug)]
+    pub enum NnError {
+        #[error(transparent)]
+        CandleError(#[from] candle::error::Error),
+    }
 }

@@ -75,10 +75,12 @@ fn train(args: TrainArgs) -> Result<()> {
             .sum_all()?
             .to_scalar::<f32>()?;
         let test_accuracy = sum_ok / test_labels.dims1()? as f32;
+
         println!(
             "{epoch:4} train loss {avg_loss:8.5} test acc: {:5.2}%",
             100. * test_accuracy
         );
+
         varmap.save(&save)?;
     }
 

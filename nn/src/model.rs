@@ -1,7 +1,7 @@
 use candle::Tensor;
 use candle_nn::{conv2d, linear, Conv2d, Dropout, Linear, VarBuilder};
 
-use crate::NnError;
+use crate::error::NnError;
 
 pub struct ConvNet {
     conv1: Conv2d,
