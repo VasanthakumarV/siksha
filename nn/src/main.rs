@@ -23,6 +23,7 @@ fn train(args: TrainArgs) -> Result<()> {
         epochs,
         learning_rate,
         batch_size,
+        save,
     } = args;
 
     let dev = Device::cuda_if_available(0)?;
@@ -78,6 +79,7 @@ fn train(args: TrainArgs) -> Result<()> {
             "{epoch:4} train loss {avg_loss:8.5} test acc: {:5.2}%",
             100. * test_accuracy
         );
+        varmap.save(&save)?;
     }
 
     Ok(())
@@ -111,6 +113,9 @@ struct TrainArgs {
     /// batch size
     #[argh(option, default = "64")]
     batch_size: usize,
+    /// file save path
+    #[argh(option, default = r#"String::from("output/model.safetensors")"#)]
+    save: String,
 }
 
 /// training parameters
