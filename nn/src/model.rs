@@ -27,9 +27,8 @@ impl ConvNet {
         })
     }
     pub fn forward(&self, xs: &Tensor, train: bool) -> Result<Tensor, NnError> {
-        let (b_sz, _img_dim) = xs.dims2()?;
         let xs = xs
-            .reshape((b_sz, 1, 28, 28))?
+            .reshape(((), 1, 28, 28))?
             .apply(&self.conv1)?
             .max_pool2d(2)?
             .apply(&self.conv2)?

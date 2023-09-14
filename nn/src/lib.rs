@@ -1,4 +1,5 @@
 mod model;
+pub mod transform;
 
 pub use model::ConvNet;
 
