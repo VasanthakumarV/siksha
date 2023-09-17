@@ -1,11 +1,10 @@
 use anyhow::Result;
 use argh::FromArgs;
-use candle::{DType, Device, D};
-use candle_datasets::vision::mnist;
-
-use candle_nn::{loss, ops, AdamW, Optimizer, ParamsAdamW, VarBuilder, VarMap};
-use nn::ConvNet;
+use candle::{safetensors::load, DType, Device, IndexOp};
+use candle_nn::{loss::mse, AdamW, Optimizer, ParamsAdamW, VarBuilder, VarMap};
 use rand::{seq::SliceRandom, thread_rng};
+
+use nn::ConvNet;
 
 fn main() -> Result<()> {
     let args: Args = argh::from_env();
@@ -20,6 +19,8 @@ fn main() -> Result<()> {
 
 fn train(args: TrainArgs) -> Result<()> {
     let TrainArgs {
+        train_data,
+        test_data,
         epochs,
         learning_rate,
         batch_size,
@@ -28,15 +29,11 @@ fn train(args: TrainArgs) -> Result<()> {
 
     let dev = Device::cuda_if_available(0)?;
 
-    let m = mnist::load()?;
-    let (train_labels, train_images) = (
-        m.train_labels.to_dtype(DType::U32)?.to_device(&dev)?,
-        m.train_images.to_device(&dev)?,
-    );
-    let (test_labels, test_images) = (
-        m.test_labels.to_dtype(DType::U32)?.to_device(&dev)?,
-        m.test_images.to_device(&dev)?,
-    );
+    let train = load(train_data, &dev)?;
+    let test = load(test_data, &dev)?;
+    let (train_images, train_targets) =
+        (train.get("imgs").unwrap(), train.get("transforms").unwrap());
+    let (test_images, test_targets) = (test.get("imgs").unwrap(), test.get("transforms").unwrap());
 
     let varmap = VarMap::new();
     let vs = VarBuilder::from_varmap(&varmap, DType::F32, &dev);
@@ -58,28 +55,21 @@ fn train(args: TrainArgs) -> Result<()> {
         batch_idxs.shuffle(&mut thread_rng());
         for batch_idx in batch_idxs.iter() {
             let train_images = train_images.narrow(0, batch_idx * batch_size, batch_size)?;
-            let train_labels = train_labels.narrow(0, batch_idx * batch_size, batch_size)?;
-            let logits = model.forward(&train_images, true)?;
-            let log_sm = ops::log_softmax(&logits, D::Minus1)?;
-            let loss = loss::nll(&log_sm, &train_labels)?;
+            let train_targets = train_targets.narrow(0, batch_idx * batch_size, batch_size)?;
+            let preds = model.forward(&train_images, true)?;
+            let loss = mse(&preds, &train_targets)?;
             opt.backward_step(&loss)?;
             sum_loss += loss.to_scalar::<f32>()?;
         }
         let avg_loss = sum_loss / n_batches as f32;
 
-        let test_logits = model.forward(&test_images, false)?;
-        let sum_ok = test_logits
-            .argmax(D::Minus1)?
-            .eq(&test_labels)?
-            .to_dtype(DType::F32)?
-            .sum_all()?
-            .to_scalar::<f32>()?;
-        let test_accuracy = sum_ok / test_labels.dims1()? as f32;
-
-        println!(
-            "{epoch:4} train loss {avg_loss:8.5} test acc: {:5.2}%",
-            100. * test_accuracy
+        let test_preds = model.forward(test_images, false)?;
+        let test_loss = mse(&test_preds, test_targets)?.to_scalar::<f32>()?;
+        dbg!(
+            test_preds.i(0)?.to_vec1::<f32>()?,
+            test_targets.i(0)?.to_vec1::<f32>()?
         );
+        println!("{epoch:4} | train-loss {avg_loss:8.5} | test-loss: {test_loss:8.5}");
 
         varmap.save(&save)?;
     }
@@ -106,10 +96,16 @@ enum Mode {
 #[derive(FromArgs, Debug)]
 #[argh(subcommand, name = "train")]
 struct TrainArgs {
+    /// training data
+    #[argh(option, default = r#"String::from("output/train.safetensors")"#)]
+    train_data: String,
+    /// testing data
+    #[argh(option, default = r#"String::from("output/test.safetensors")"#)]
+    test_data: String,
     /// epochs to run
     #[argh(option, default = "1000")]
     epochs: usize,
-    /// learning Rate
+    /// learning rate
     #[argh(option, default = "0.001")]
     learning_rate: f64,
     /// batch size

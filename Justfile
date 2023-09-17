@@ -1,5 +1,4 @@
-nn +ARGS='train':
-	cargo r -r -p nn --bin nn -- {{ARGS}}
+train *ARGS: (_run "nn" "nn" ARGS)
 
-test:
-	cargo r -r -p nn --bin test
+_run PKG BIN ARGS:
+	cargo r -r -p {{PKG}} --bin {{BIN}} -- {{ARGS}}

@@ -16,7 +16,7 @@ impl ConvNet {
         let conv1 = conv2d(1, 32, 5, Default::default(), vs.pp("conv1"))?;
         let conv2 = conv2d(32, 64, 5, Default::default(), vs.pp("conv2"))?;
         let fc1 = linear(1024, 1024, vs.pp("fc1"))?;
-        let fc2 = linear(1024, 10, vs.pp("fc2"))?;
+        let fc2 = linear(1024, 16, vs.pp("fc2"))?;
         let dropout = Dropout::new(0.5);
         Ok(Self {
             conv1,

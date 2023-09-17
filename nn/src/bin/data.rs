@@ -1,5 +1,3 @@
-use std::time::Instant;
-
 use anyhow::Result;
 use candle::{safetensors::save, Device, Tensor};
 use candle_datasets::vision::mnist;
@@ -15,9 +13,7 @@ fn main() -> Result<()> {
     let imgs = m.test_images;
 
     let b_size = imgs.dim(0)?;
-    let start = Instant::now();
     let imgs = imgs.to_vec2::<f32>()?;
-    dbg!(start.elapsed());
 
     let rng = rand::thread_rng();
     let rand_trans: Vec<f32> = Uniform::new_inclusive(-10., 10.)
@@ -31,8 +27,6 @@ fn main() -> Result<()> {
 
     let mut output_imgs = vec![0.; b_size * 28 * 28];
     let mut inverse_transforms = vec![0.; b_size * 16];
-
-    let start = Instant::now();
     for (i, img) in imgs.iter().enumerate() {
         let i_strided = i * 2;
         let scale = Vec3::new(rand_scales[i_strided], rand_scales[i_strided + 1], 1.);
@@ -48,23 +42,12 @@ fn main() -> Result<()> {
         let (start, end) = (i * 16, i * 16 + 16);
         inverse_transforms.splice(start..end, transform.inverse().to_cols_array());
     }
-    dbg!(start.elapsed());
 
-    let start = Instant::now();
     let output_imgs = Tensor::from_vec(output_imgs, (b_size, 28 * 28), &Device::Cpu)?;
-    dbg!(start.elapsed());
-
-    let start = Instant::now();
     let inverse_transforms = Tensor::from_vec(inverse_transforms, (b_size, 16), &Device::Cpu)?;
-    dbg!(start.elapsed());
-
-    dbg!(output_imgs.shape(), inverse_transforms.shape());
-
-    let start = Instant::now();
     let output = [("imgs", output_imgs), ("transforms", inverse_transforms)]
         .into_iter()
         .collect();
-    dbg!(start.elapsed());
 
     // save(&output, "output/train.safetensors")?;
     save(&output, "output/test.safetensors")?;
