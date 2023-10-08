@@ -8,13 +8,16 @@ edition = "2021"
 [dependencies]
 candle.workspace = true
 candle-nn.workspace = true
-candle-datasets.workspace = true
-argh.workspace = true
-thiserror.workspace = true
-anyhow.workspace = true
-rand.workspace = true
 glam.workspace = true
+num-traits = "0.2.16"
+thiserror.workspace = true
+
+[dev-dependencies]
+candle-datasets.workspace = true
+rand.workspace = true
 image.workspace = true
+argh.workspace = true
+anyhow.workspace = true
 
 [features]
 cuda = ["candle/cudnn", "candle-nn/cuda"]

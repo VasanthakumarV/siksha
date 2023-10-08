@@ -1,8 +1,6 @@
 [workspace]
 resolver = "2"
-members = [
-  "nn",
-]
+members = ["nn", "viz"]
 
 [workspace.dependencies]
 candle = { git = "https://github.com/huggingface/candle.git", package = "candle-core" }

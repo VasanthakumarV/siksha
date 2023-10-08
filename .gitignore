@@ -1,3 +1,5 @@
 /target
 /output
 .token
+**/dist
+**/node_modules

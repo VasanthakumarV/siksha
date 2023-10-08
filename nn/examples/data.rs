@@ -1,5 +1,5 @@
 use anyhow::Result;
-use candle::{safetensors::save, Device, Tensor};
+use candle::{safetensors::save, Device, IndexOp, Tensor};
 use candle_datasets::vision::mnist;
 use glam::Vec3;
 use rand::{distributions::Uniform, prelude::Distribution};
@@ -11,6 +11,10 @@ fn main() -> Result<()> {
 
     // let imgs = m.train_images;
     let imgs = m.test_images;
+
+    // imgs.i(..10)?
+    //     .save_safetensors("test-images", "output/test-images.safetensors")?;
+    // todo!();
 
     let b_size = imgs.dim(0)?;
     let imgs = imgs.to_vec2::<f32>()?;

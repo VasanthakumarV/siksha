@@ -1,7 +1,5 @@
-use glam::Mat4;
-
-use glam::Vec3;
-use glam::Vec4;
+use glam::{Mat4, Vec3, Vec4};
+use num_traits::identities::Zero;
 
 #[derive(Debug)]
 pub struct ImgTransform {
@@ -82,6 +80,16 @@ impl ImgTransform {
     }
 }
 
+pub fn transform_buffer<T: Copy + Zero>(
+    buffer_in: &[T],
+    size: (usize, usize),
+    transform: Mat4,
+) -> Vec<T> {
+    let mut buffer_out = vec![T::zero(); buffer_in.len()];
+    transform_buffer_into(buffer_in, &mut buffer_out, size, transform);
+    buffer_out
+}
+
 pub fn transform_buffer_into<T: Copy>(
     buffer_in: &[T],
     buffer_out: &mut [T],
@@ -91,14 +99,19 @@ pub fn transform_buffer_into<T: Copy>(
     let (width, height) = size;
     for h in 0..height {
         for w in 0..width {
-            let i = 28 * h + w;
             let vertex = Vec4::new(h as f32, w as f32, 0., 1.);
             let vertex = transform * vertex;
-            let (h_o, w_o) = (vertex.x as usize, vertex.y as usize);
-            let i_o = 28 * h_o + w_o;
-            if (h_o < height) & (w_o < width) {
-                buffer_out[i_o] = buffer_in[i];
+            let (h_pre, w_pre) = (vertex.x, vertex.y);
+
+            let mut h_pre = (h_pre + 0.5) as u32;
+            let mut w_pre = (w_pre + 0.5) as u32;
+            if (h_pre >= height as u32) || (w_pre >= width as u32) {
+                (h_pre, w_pre) = (1, 1);
             }
+
+            let i = 28 * h + w;
+            let i_pre = 28 * h_pre + w_pre;
+            buffer_out[i] = buffer_in[i_pre as usize];
         }
     }
 }

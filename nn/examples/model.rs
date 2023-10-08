@@ -11,8 +11,31 @@ fn main() -> Result<()> {
 
     match args.mode {
         Mode::Train(args) => train(args),
-        _ => todo!(),
+        Mode::Pred(args) => pred(args),
     }?;
+
+    Ok(())
+}
+
+fn pred(args: PredArgs) -> Result<()> {
+    let PredArgs {
+        model_file,
+        input_images,
+    } = args;
+
+    let dev = Device::cuda_if_available(0)?;
+
+    let images = load(input_images, &dev)?;
+    let images = images.get("imgs").unwrap();
+
+    let mut varmap = VarMap::new();
+    varmap.load(model_file)?;
+    let vs = VarBuilder::from_varmap(&varmap, DType::F32, &dev);
+
+    let model = ConvNet::new(vs.clone())?;
+
+    let preds = model.forward(images, false)?;
+    dbg!(preds);
 
     Ok(())
 }
@@ -119,4 +142,11 @@ struct TrainArgs {
 /// training parameters
 #[derive(FromArgs, Debug)]
 #[argh(subcommand, name = "pred")]
-struct PredArgs {}
+struct PredArgs {
+    /// model file path
+    #[argh(option, default = r#"String::from("output/model.safetensors")"#)]
+    model_file: String,
+    /// input images file
+    #[argh(option, default = r#"String::from("output/test.safetensors")"#)]
+    input_images: String,
+}
