@@ -90,7 +90,7 @@ pub fn transform_buffer<T: Copy + Zero>(
     buffer_out
 }
 
-pub fn transform_buffer_into<T: Copy>(
+pub fn transform_buffer_into<T: Copy + Zero>(
     buffer_in: &[T],
     buffer_out: &mut [T],
     size: (usize, usize),
@@ -99,19 +99,18 @@ pub fn transform_buffer_into<T: Copy>(
     let (width, height) = size;
     for h in 0..height {
         for w in 0..width {
+            let i = 28 * h + w;
+
             let vertex = Vec4::new(h as f32, w as f32, 0., 1.);
             let vertex = transform * vertex;
-            let (h_pre, w_pre) = (vertex.x, vertex.y);
+            let (h_pre, w_pre) = (vertex.x.round(), vertex.y.round());
 
-            let mut h_pre = (h_pre + 0.5) as u32;
-            let mut w_pre = (w_pre + 0.5) as u32;
-            if (h_pre >= height as u32) || (w_pre >= width as u32) {
-                (h_pre, w_pre) = (1, 1);
+            if (0f32..height as f32).contains(&h_pre) && (0f32..width as f32).contains(&w_pre) {
+                let i_pre = (28. * h_pre + w_pre) as usize;
+                buffer_out[i] = buffer_in[i_pre];
+            } else {
+                buffer_out[i] = T::zero();
             }
-
-            let i = 28 * h + w;
-            let i_pre = 28 * h_pre + w_pre;
-            buffer_out[i] = buffer_in[i_pre as usize];
         }
     }
 }
