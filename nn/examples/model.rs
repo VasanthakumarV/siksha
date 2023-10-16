@@ -89,8 +89,8 @@ fn train(args: TrainArgs) -> Result<()> {
         let test_preds = model.forward(test_images, false)?;
         let test_loss = mse(&test_preds, test_targets)?.to_scalar::<f32>()?;
         dbg!(
-            test_preds.i(0)?.to_vec1::<f32>()?,
-            test_targets.i(0)?.to_vec1::<f32>()?
+            test_preds.i(0)?.round_to(2)?.to_vec1::<f32>()?,
+            test_targets.i(0)?.round_to(2)?.to_vec1::<f32>()?
         );
         println!("{epoch:4} | train-loss {avg_loss:8.5} | test-loss: {test_loss:8.5}");
 
@@ -126,7 +126,7 @@ struct TrainArgs {
     #[argh(option, default = r#"String::from("output/test.safetensors")"#)]
     test_data: String,
     /// epochs to run
-    #[argh(option, default = "1000")]
+    #[argh(option, default = "100")]
     epochs: usize,
     /// learning rate
     #[argh(option, default = "0.001")]

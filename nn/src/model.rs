@@ -1,11 +1,14 @@
 use candle::Tensor;
-use candle_nn::{conv2d, linear, Conv2d, Conv2dConfig, Dropout, Linear, VarBuilder};
+use candle_nn::{conv2d, linear, Activation, Conv2d, Conv2dConfig, Dropout, Linear, VarBuilder};
 
 use crate::error::NnError;
 
 pub struct ConvNet {
     conv1: Conv2d,
     fc1: Linear,
+    fc2: Linear,
+    // fc3: Linear,
+    // fc4: Linear,
 }
 
 impl ConvNet {
@@ -13,15 +16,24 @@ impl ConvNet {
         let conv1 = conv2d(
             1,
             1,
-            3,
+            4,
             Conv2dConfig {
-                stride: 3,
+                stride: 4,
                 ..Default::default()
             },
             vs.pp("conv1"),
         )?;
-        let fc1 = linear(81, 16, vs.pp("fc1"))?;
-        Ok(Self { conv1, fc1 })
+        let fc1 = linear(49, 200, vs.pp("fc1"))?;
+        let fc2 = linear(200, 16, vs.pp("fc2"))?;
+        // let fc3 = linear(100, 16, vs.pp("fc3"))?;
+        // let fc4 = linear(50, 16, vs.pp("fc4"))?;
+        Ok(Self {
+            conv1,
+            fc1,
+            fc2,
+            // fc3,
+            // fc4,
+        })
     }
     pub fn forward(&self, xs: &Tensor, train: bool) -> Result<Tensor, NnError> {
         let xs = xs
@@ -29,7 +41,13 @@ impl ConvNet {
             .apply(&self.conv1)?
             .flatten_from(1)?
             .apply(&self.fc1)?
-            .relu()?;
+            // .relu()?
+            .apply(&Activation::LeakyRelu(0.1))?
+            .apply(&self.fc2)?;
+        // .relu()?
+        // .apply(&self.fc3)?;
+        // .relu()?
+        // .apply(&self.fc4)?;
         Ok(xs)
     }
 }
