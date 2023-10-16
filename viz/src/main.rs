@@ -104,7 +104,7 @@ fn App() -> impl IntoView {
         let scale = RwSignal::new(rw_signal.get_untracked());
         view! {
             <input
-                class="range max-w-xs"
+                class="range w-52"
                 type="range"
                 min=min
                 max=max
@@ -119,7 +119,7 @@ fn App() -> impl IntoView {
     }
 
     view! {
-        <div class="flex flex-col flex-nowrap gap-10 justify-center p-10 sm:flex-row">
+        <div class="flex flex-col gap-10 justify-center p-10 sm:flex-row">
             <div class="flex flex-col gap-y-4">
                 <label>"Scale"</label>
                 <div class="flex flex-row gap-x-4 justify-center">
