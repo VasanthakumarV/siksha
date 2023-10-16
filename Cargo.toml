@@ -1,8 +1,11 @@
 [workspace]
 resolver = "2"
-members = ["nn", "viz"]
+members = ["nn"]
+exclude = ["viz"]
 
 [workspace.dependencies]
+# candle = { path = "../../candle/candle-core", package = "candle-core" }
+# candle-nn = { path = "../../candle/candle-nn" }
 candle = { git = "https://github.com/huggingface/candle.git", package = "candle-core" }
 candle-nn = { git = "https://github.com/huggingface/candle.git" }
 candle-datasets = { git = "https://github.com/huggingface/candle.git" }
